@@ -1,0 +1,1 @@
+# isWon?celebrate():tryHarder(ninjaSkills);
