@@ -1,11 +1,9 @@
 # ByllMe
 
-Meet your friends. Go out. Let **Byll** split the bills for you.
 
-Everything you need in one single place.
+Visitar (**ByllMe**)[https://github.com/CarlosANovo/ByllMe] para mais informações sobre o projeto.
 
-
-**ByllMe** is a messenger bot which the main purpose is to save all expenses you send in a messenger conversation.
+Devido a situações fora do nosso alcance este repositório não pode ser usado para realizar o "hosting" do projeto.
 
 
 
