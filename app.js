@@ -256,9 +256,9 @@ function receivedMessage(event) {
         var quickReplyPayload = quickReply.payload;
         console.log("Quick reply for message %s with payload %s",
             messageId, quickReplyPayload);
-
-        sendTextMessage(senderID, "Quick reply tapped");
-        return;
+        messageText = quickReplyPayload.toString();
+        //sendTextMessage(senderID, "Quick reply tapped");
+        //return;
     }
 
     if (messageText) {
@@ -279,43 +279,68 @@ function receivedMessage(event) {
             // eg m[0] etc.
 
             // ADD USER or JUST ADD EXPENSE
-            sendTextMessage(senderID, "An expense was added to " + m[1] + " for the value of " + m[3] + "€");
-			
-			Bill.findOne({ id: senderID, person: m[1] }, function (error, docs){
-					if(error){
-						// Output to log
-					} else if (docs){
-						
-						if (typeof docs.price == "undefined"){
-							// User doesn't exist
-							// Create user
-							var newUser = {
-								id: senderID,
-								person: m[1],
-								price: Number(m[3])
-							};
-							
-							Bill.create(newUser);
-						} else {
-							// User already exists, update
-							Bill.findOneAndUpdate({ id: senderID, person: m[1] }, { price: Number(m[3])+Number(docs.price) }, function (err, docu) {} );
-						}
-					}
-				});
-			Bill.findOne({ id: senderID, person: m[1] }, function (error, docs){
-				sendTextMessage(senderID, "Current status for " + m[1] + ": " + docs.price + "€");	// IT DOESN'T SHOW THE CURRENT, BUT RATHER THE PREVIOUS STATE
-			});
-			
-			
-			/*
-            Blog.findByIdAndUpdate(req.params.id, req.body.blog, function (error, blog) {
+            sendTextMessage(senderID, "An expense was added to " + m[1] + " for the value of " + m[3] + "€. To check current status use 'stats'.");
+
+            Bill.findOne({id: senderID, person: m[1]}, function (error, docs) {
                 if (error) {
-                    res.redirect("/blogs");
+                    // Output to log
+                } else if (docs) {
+
+                    if (typeof docs.price == "undefined") {
+                        // User doesn't exist
+                        // Create user
+                        var newUser = {
+                            id: senderID,
+                            person: m[1],
+                            price: Number(m[3])
+                        };
+
+                        Bill.create(newUser);
+                    } else {
+                        // User already exists, update
+                        Bill.findOneAndUpdate({
+                            id: senderID,
+                            person: m[1]
+                        }, {price: Number(m[3]) + Number(docs.price)}, function (err, docu) {
+                        });
+                    }
                 } else {
-                    res.redirect("/blogs/" + req.params.id)
+                    var newUser = {
+                        id: senderID,
+                        person: m[1],
+                        price: Number(m[3])
+                    };
+
+                    Bill.create(newUser);
                 }
             });
-			*/
+            /*
+             Bill.findOne({ id: senderID, person: m[1] }, function (error, docs){
+             sendTextMessage(senderID, "Current status for " + m[1] + ": " + docs.price + "€");	// IT DOESN'T SHOW THE CURRENT, BUT RATHER THE PREVIOUS STATE
+             });
+             */
+            /*
+             Bill.findOne({ id: senderID, person: m[1] }, function (error, docs){
+             if (error){
+             //Output error
+             } else if (docs) {
+             if (typeof docs.price == "undefined"){
+             sendTextMessage(senderID, "I don't think I know who " + m[1] + " is.");
+             } else {
+             sendTextMessage(senderID, "Current status for " + m[1] + ": " + docs.price + "€");	// IT DOESN'T SHOW THE CURRENT, BUT RATHER THE PREVIOUS STATE
+             }
+             }
+             });
+             */
+            /*
+             Blog.findByIdAndUpdate(req.params.id, req.body.blog, function (error, blog) {
+             if (error) {
+             res.redirect("/blogs");
+             } else {
+             res.redirect("/blogs/" + req.params.id)
+             }
+             });
+             */
             return;
         }
 
@@ -328,65 +353,87 @@ function receivedMessage(event) {
             if (n.index === re.lastIndex) {
                 re.lastIndex++;
             }
-			
-			Bill.findOne({ id: senderID, person: n[1] }, function (error, docs){
-					if(error){
-						// Output to log
-					} else if (docs){
-						if (typeof docs.price == "undefined"){
-							// User doesn't exist
-							sendTextMessage(senderID, "I don't think I know who "+ n[1] +" is.");
-						} else {
-							// User already exists, update
-							if (Number(docs.price) < Number(n[3])){
-								sendTextMessage(senderID, n[1] +" never paid that much in the first place. Use another value.");
-							} else {
-								Bill.findOneAndUpdate({ id: senderID, person: n[1] }, { price: Number(docs.price)-Number(n[3]) }, function (err, docu) {} );
-								sendTextMessage(senderID, "I'll remove the expense of " + n[1] + ", for the value of " + n[3] + "€");
-							}
-						}
-					}
-				});
-			Bill.findOne({ id: senderID, person: n[1] }, function (error, docs){
-				sendTextMessage(senderID, "Current status for " + n[1] + ": " + docs.price + "€");  // IT DOESN'T SHOW THE CURRENT, BUT RATHER THE PREVIOUS STATE
-			});
-			
+
+            Bill.findOne({id: senderID, person: n[1]}, function (error, docs) {
+                if (error) {
+                    // Output to log
+                } else if (docs) {
+                    if (typeof docs.price == "undefined") {
+                        // User doesn't exist
+                        sendTextMessage(senderID, "I don't think I know who " + n[1] + " is.");
+                    } else {
+                        // User already exists, update
+                        if (Number(docs.price) < Number(n[3])) {
+                            sendTextMessage(senderID, n[1] + " never paid that much in the first place. Use another value.");
+                        } else {
+                            Bill.findOneAndUpdate({
+                                id: senderID,
+                                person: n[1]
+                            }, {price: Number(docs.price) - Number(n[3])}, function (err, docu) {
+                            });
+                            sendTextMessage(senderID, "I'll remove the expense of " + n[1] + ", for the value of " + n[3] + "€. To check current status use 'stats'.");
+                        }
+                    }
+                } else {
+                    sendTextMessage(senderID, "I don't think I know who " + n[1] + " is.");
+                }
+            });
+            /*
+             Bill.findOne({ id: senderID, person: n[1] }, function (error, docs){
+             sendTextMessage(senderID, "Current status for " + n[1] + ": " + docs.price + "€");  // IT DOESN'T SHOW THE CURRENT, BUT RATHER THE PREVIOUS STATE
+             });
+             */
+            /*
+             Bill.findOne({ id: senderID, person: n[1] }, function (error, docs){
+             if (error){
+             //Output error
+             } else if (docs) {
+             if (typeof docs.price == "undefined"){
+             sendTextMessage(senderID, "I don't think I know who " + n[1] + " is.");
+             } else {
+             sendTextMessage(senderID, "Current status for " + n[1] + ": " + docs.price + "€");	// IT DOESN'T SHOW THE CURRENT, BUT RATHER THE PREVIOUS STATE
+             }
+             }
+             });
+             */
+            return;
             // Remove expense or give warning
         }
 
 
         switch (messageText.toLowerCase()) {
             case "hi":
-			case "hi.":
-			case "hi...":
-			case "hi!":
+            case "hi.":
+            case "hi...":
+            case "hi!":
             case "hello":
-			case "hello.":
-			case "hello...":
-			case "hello!":
+            case "hello.":
+            case "hello...":
+            case "hello!":
             case "hey":
-			case "hey!":
+            case "hey!":
             case "good morning":
-			case "good morning.":
-			case "good morning!":
+            case "good morning.":
+            case "good morning!":
             case "good evening":
-			case "good evening!":
-			case "good evening.":
+            case "good evening!":
+            case "good evening.":
             case "good night":
-			case "good night.":
-			case "good night!":
-                sendTextMessage(senderID, "Hi! My name is Byll, I'm here to help you split your bills with your friends... Type 'help' to see the words I understand :)");
+            case "good night.":
+            case "good night!":
+                sendQuickYesNo(senderID);
+                // sendTextMessage(senderID, "Hi! My name is Byll, I'm here to help you split your bills with your friends... Type 'help' to see the words I understand :)");
                 break;
 
             case "help":
             case "?":
             case "commands":
-                sendTextMessage(senderID, "Type 'start' or 'begin' to start a new session. Record everyone's expenses and split the bill at the end. Add your your friends by simply saying 'Add John', 'Mary paid 20€' or 'Steve spent 10.43€'... When you're done, just 'split the bill'! ;) ('help2' for more)");
+                sendTextMessage(senderID, "Type 'start' or 'begin' to start a new session. Record everyone's expenses and split the bill at the end. Add your your friends by simply saying 'Mary paid 20€' or even 'Steve spent 0€'... When you're done, just 'split the bill'! ;) ('help2' for more)");
                 break;
 
             case "help2":
             case "?2":
-                sendTextMessage(senderID, "If you wish to add many people at once, type 'Add users'. Remove someone with (for example) 'Remove Steve' and remove expenses with 'John didn't pay 10€'. Check the current status, and see how much money each user spent so far using 'stats' or 'current'. Delete everything and start over with 'reset' or 'fresh start'.");
+                sendTextMessage(senderID, "Remove someone with (for example) 'Remove Steve' and remove expenses with 'John didn't pay 10€'. Check the current status, and see how much money each user spent so far using 'stats' or 'current'. Delete everything and start over with 'reset' or 'fresh start'.");
                 break;
 
             case "start recording":
@@ -404,6 +451,11 @@ function receivedMessage(event) {
             case "fresh start":
             case "reset":
                 //Similar to start, but removes everything first
+                Bill.delete({id: senderID}, function (error) {
+                    if (error) {
+                        console.log(error);
+                    }
+                });
                 break;
 
             case "add users":
@@ -415,18 +467,11 @@ function receivedMessage(event) {
             case "status":
             case "stats":
             case "current":
-                //Displays current status...
-                break;
-
-            case "split the bill":
-                // ....
-                break;
-
             case "db":
-                Bill.find({id:senderID}, function (error, results) {
+                Bill.find({id: senderID}, function (error, results) {
                     if (!error) {
                         results.forEach(function (result) {
-                            sendTextMessage(senderID, "Person: " + result.person + "\nPrice: " + result.price);
+                            sendTextMessage(senderID, result.person + " - paid " + result.price + "€ (so far)");
                         });
                     } else {
                         sendTextMessage(senderID, error);
@@ -434,30 +479,86 @@ function receivedMessage(event) {
                 });
                 break;
 
+            case "split the bill":
             case "results":
-                Bill.find({}, function (error, results) {
-                        if (!error && results.length > 2) {
-                            var sum = 0;
-                            var n = 0;
-                            results.forEach(function (result) {
-                                sum += result.price;
-                                n++;
-                            });
-                            var average = sum / n;
-                            results.forEach(function (result) {
+                try {
+                    Bill.find({}, function (error, results) {
+                            sendTextMessage(senderID, results.length);
+                            if (!error && results.length > 2) {
+                                var sum = 0;
+                                var n = 0;
+                                results.forEach(function (result) {
+                                    sum += result.price;
+                                    n++;
+                                });
+                                if (n != 0) var average = sum / n;
+                                for (var i = 0; typeof results[i].price != "undefined" && i < results.length; i++) {
+                                    for (var j = 0; typeof results[j].price != "undefined" && j < results.length; j++) {
+                                        if (results[i].price > results[j].price) {
+                                            var prov = results[j];
+                                            results[j] = results[i];
+                                            results[i] = prov;
+                                        }
+                                    }
+                                }
+                                for (var i = 0; typeof results[i].price != "undefined" && i < results.length; i++) {
+                                    results[i].price = results[i].price - average;
+                                    results[i].paywho = [];
+                                    results[i].payhowmuch = [];
+                                }
 
-                            });
-                            sendTextMessage(senderID, "WORKING BIATCH!");
-                        } else if (!error && results.length == 2) {
-                            sendTextMessage(senderID, "Just give the money to the other guy! You are just two!");
-                        } else if (!error && results.length < 2) {
-                            sendTextMessage(senderID, "No split needed...");
-                        } else {
-                            sendTextMessage(senderID, error);
+                                for (var i = 0; i < results.length; i++) {
+                                    if (typeof results[i].price != "undefined" && results[i].price != 0 && results[i].price < 0) {
+                                        for (var j = i + 1; typeof results[j].price != "undefined" && j < results.length; j++) {
+                                            if (typeof results[j].price != "undefined" && typeof results[i].price != "undefined" && Math.abs(results[i].price) < results[j].price && results[j].price > 0) {
+                                                var prov = results[j].price;
+                                                results[j].price += results[i].price;
+                                                results[i].price = 0;
+                                                results[i].paywho[1] = results[j].person;
+                                                results[i].payhowmuch[1] = prov;
+                                            }
+                                        }
+                                        while (typeof results[i].price != "undefined" && results[i].price < 0) {
+                                            var k = 0;
+                                            var difpag = Math.abs(results[i].price);
+                                            var difrece = results[j].price;
+                                            if (difpag > difrece) {
+                                                results[j].price += results[i].price;
+                                                results[i].price = 0;
+                                                results[i].payhowmuch[k] = difpag;
+                                            }
+                                            else {
+                                                results[i].price += difrece;
+                                                results[j].price = 0;
+                                                results[i].payhowmuch[k] = difrece;
+                                            }
+                                            results[i].paywho[k] = results[j].person;
+                                            j--;
+                                            k++;
+                                        }
+                                    }
+                                }
+                                for (var i = 0; typeof results[i].price != "undefined" && i < results.length; i++) {
+                                    var k = 0;
+                                    for (var j = 0; typeof results[i].payhowmuch[j] != "undefined" && j < payhowmuch.length; j++) {
+                                        sendTextMessage(senderID, results[i].person + " needs to pay " + results[i].payhowmuch[j] + "€ to " + results[i].paywho[j]);
+                                        if (payhowmuch.length > k) {
+                                            sendTextMessage(senderID, "and " + results[i].payhowmuch[j] + " € to " + results[i].paywho[j]);
+                                        }
+                                        k--;
+                                    }
+                                }
+                            } else if (!error && results.length == 2) {
+                                sendTextMessage(senderID, "Just give the money to the other guy! You are just two!");
+                            } else if (!error && results.length < 2) {
+                                sendTextMessage(senderID, "No split needed...");
+                            } else {
+                                sendTextMessage(senderID, error);
+                            }
+
                         }
-
-                    }
-                );
+                    );
+                }
 
                 break;
 
@@ -846,6 +947,38 @@ function sendReceiptMessage(recipientId) {
  * Send a message with Quick Reply buttons.
  *
  */
+
+function sendQuickYesNo(recipientId) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: "Hi! My name is Byll, I'm here to help you split your bills with your friends... Type 'help' to see the words I understand :)",
+            metadata: "DEVELOPER_DEFINED_METADATA",
+            quick_replies: [
+                {
+                    "content_type": "text",
+                    "title": "Help",
+                    "payload": "help"
+                },
+                {
+                    "content_type": "text",
+                    "title": "Stats",
+                    "payload": "stats"
+                },
+                {
+                    "content_type": "text",
+                    "title": "Split the bill",
+                    "payload": "split the bill"
+                }
+            ]
+        }
+    };
+
+    callSendAPI(messageData);
+}
+
 function sendQuickReply(recipientId) {
     var messageData = {
         recipient: {

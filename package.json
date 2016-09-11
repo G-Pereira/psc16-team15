@@ -1,7 +1,7 @@
 {
-  "name": "byll",
+  "name": "messenger-get-started",
   "version": "1.0.0",
-  "description": "Divide Expenses Easily",
+  "description": "Get started example for Messenger Platform",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
@@ -10,9 +10,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/portosummerofcode/psc16-team15.git"
+    "url": "https://github.com/fbsamples/messenger-platform-samples.git"
   },
-  "author": "Gonçalo Pereira, João Sá, Carlos Novo, Daniel Silva",
+  "author": "Facebook",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.15.0",
