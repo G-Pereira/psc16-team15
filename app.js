@@ -280,13 +280,29 @@ function receivedMessage(event) {
 
             // ADD USER or JUST ADD EXPENSE
             sendTextMessage(senderID, "I'll add an expense for " + m[1] + " for the value of " + m[3] + "€");
-            var newUser = {
-                id: senderID,
-                person: m[1],
-                price: Number(m[3])
-            };
-            Bill.create(newUser);
-            Blog.findAndUpdate({id: senderID}, req.body.blog);
+
+            Bill.find({id: senderID, person:m[1]}, function (error, result) {
+                if(result){
+                    var old_price = result[0].price;
+                    Bill.delete({id: senderID, person: m[1]}, function (error, result) {
+                       if(!error){
+                           var newUser = {
+                               id: senderID,
+                               person: m[1],
+                               price: old_price + Number(m[3])
+                           };
+                           Bill.create(newUser);
+                       }
+                    });
+                } else {
+                    var newUser = {
+                        id: senderID,
+                        person: m[1],
+                        price: Number(m[3])
+                    };
+                    Bill.create(newUser);
+                }
+            });
             return;
         }
 
