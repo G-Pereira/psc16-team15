@@ -380,9 +380,52 @@ function receivedMessage(event) {
                                 n++;
                             });
                             var average = sum / n;
-                            results.forEach(function (result) {
+                            for (var i = 0; i < results.length; i++) {
+                                for (var j = 0; j < results.length; j++) {
+                                    if (results[i].price > results[j].price) {
+                                        var prov = results[j];
+                                        results[j] = results[i];
+                                        results[i] = prov;
+                                    }
+                                }
+                            }
+                            for (var i = 0; i = results.length; i++) {
+                                results[i].price = results[i].price - average;
+                                results[i].paywho = [];
+                                results[i].payhowmuch = [];
+                            }
 
-                            });
+                            for (var i = 0; i < results.length; i++){
+                               if (results[i].price != 0 && results[i].price < 0) {
+                                   for (var j = i + 1; j < results.length; j++) {
+                                       if (math.abs(results[i].price) < results[j].price && results[j].price > 0) {
+                                           var prov = results[j].price;
+                                           results[j].price += results[i].price;
+                                           results[i].price = 0;
+                                           results[i].paywho[1] = results[j].person;
+                                           results[i].payhowmuch[1] = prov;
+                                       }
+                                   }
+                                   while (results[i].price < 0) {
+                                       var k = 0;
+                                       var difpag = -results[i].price;
+                                       var difrece = results[j].price;
+                                       if (difpag > difrece) {
+                                           results[j].price += results[i].price;
+                                           results[i].price = 0;
+                                           results[i].payhowmuch[k] = difpag;
+                                       }
+                                       else {
+                                           results[i].price += difrece;
+                                           results[j] = 0;
+                                           results[i].payhowmuch[k] = difrece;
+                                       }
+                                       results[i].paywho[k] = results[j].person;
+                                       j--;
+                                       k++;
+                                   }
+                               }
+                           }
                             sendTextMessage(senderID, "WORKING BIATCH!");
                         } else if (!error && results.length == 2) {
                             sendTextMessage(senderID, "Just give the money to the other guy! You are just two!");
